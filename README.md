@@ -2,7 +2,7 @@
 
 A high-performance, event-driven API platform built with Python and AWS Serverless. This system processes transactional requests with sub-second latency and includes full audit logging.
 
-## 🚀 Architecture
+## ☁️ Architecture
 - **API Gateway**: RESTful entry point.
 - **AWS Lambda**: Core logic (Python 3.9).
 - **DynamoDB**: High-speed transaction state storage.
