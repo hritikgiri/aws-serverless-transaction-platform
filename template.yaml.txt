@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless Transaction Platform
+
+Resources:
+  # DynamoDB Table for Transactions and Audit Logs
+  TransactionTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: TransactionId
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  # S3 Bucket for Raw Payloads (Audit Traceability)
+  AuditS3Bucket:
+    Type: AWS::S3::Bucket
+
+  # Dead Letter Queue for Failed Transactions
+  TransactionDLQ:
+    Type: AWS::SQS::Queue
+
+  # The Processing Lambda Function
+  TransactionProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      MemorySize: 512
+      Timeout: 10
+      Policies:
+        - DynamoDBCrudPolicy: {TableName: !Ref TransactionTable}
+        - S3WritePolicy: {BucketName: !Ref AuditS3Bucket}
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt TransactionDLQ.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TransactionTable
+          BUCKET_NAME: !Ref AuditS3Bucket
+      Events:
+        PostTransaction:
+          Type: Api
+          Properties:
+            Path: /process
+            Method: post
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/process/"

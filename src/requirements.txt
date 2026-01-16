@@ -1,0 +1,11 @@
+# AWS SDK for Python (Pre-installed on Lambda, but good for local dev)
+boto3==1.34.0
+
+# For handling complex date/time logic if needed
+python-dateutil==2.8.2
+
+# Highly recommended for high-volume JSON validation
+pydantic==2.5.3
+
+# Alternative database dependency if you want to connect to oracle database
+# oracledb==2.0.0
